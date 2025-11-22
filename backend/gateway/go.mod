@@ -1,6 +1,6 @@
 module github.com/mattuttis/inetcontrol/zoekdeware/backend/gateway
 
-go 1.24
+go 1.23
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
