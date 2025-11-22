@@ -1,25 +1,25 @@
-# Dating App
+# ZoekDeware
 
-A microservices-based dating application backend built with Go, following DDD and Event Sourcing patterns.
+A microservices-based dating application built with Go, following DDD and Event Sourcing patterns.
 
 ## Architecture
 
 ```
 ┌─────────────┐     ┌─────────────────────────────────────────────┐
-│   Mobile    │────▶│              API Gateway                    │
-│   Clients   │     │         (REST/WebSocket)                    │
+│   iOS App   │────▶│              API Gateway                    │
+│  (SwiftUI)  │     │         (REST/WebSocket)                    │
 └─────────────┘     └─────────────────────────────────────────────┘
-                                      │
-                                      ▼
-                               ┌──────────┐
-                               │  Member  │
-                               │ Service  │
-                               └──────────┘
-                                      │
-                              ┌───────┴───────┐
-                              │  Event Bus    │
-                              │   (NATS)      │
-                              └───────────────┘
+                                     │
+                                     ▼
+                              ┌──────────┐
+                              │  Member  │
+                              │ Service  │
+                              └──────────┘
+                                     │
+                             ┌───────┴───────┐
+                             │  Event Bus    │
+                             │   (NATS)      │
+                             └───────────────┘
 ```
 
 ## Services
@@ -45,45 +45,23 @@ A microservices-based dating application backend built with Go, following DDD an
 │       └── gateway.yaml      # REST API spec
 ├── backend/
 │   ├── gateway/              # API Gateway
-│   │   ├── cmd/server/
-│   │   └── internal/
-│   │       ├── config/
-│   │       ├── handlers/
-│   │       ├── middleware/
-│   │       └── router/
 │   ├── services/
 │   │   └── member/           # Member service (DDD + Event Sourcing)
-│   │       ├── cmd/server/
-│   │       └── internal/
-│   │           ├── domain/
-│   │           │   ├── aggregate/
-│   │           │   ├── commands/
-│   │           │   ├── events/
-│   │           │   ├── repository/
-│   │           │   └── valueobject/
-│   │           ├── application/
-│   │           └── infrastructure/
-│   │               └── eventstore/
 │   ├── shared/               # Shared packages
-│   │   └── pkg/
-│   │       ├── auth/
-│   │       ├── config/
-│   │       ├── errors/
-│   │       ├── eventstore/
-│   │       └── messaging/
 │   └── go.work               # Go workspace
+├── mobile/
+│   └── ios/                  # iOS app (SwiftUI, iOS 16+)
+│       ├── ZoekDeware/
+│       ├── project.yml       # XcodeGen configuration
+│       └── Makefile
 ├── infrastructure/
 │   ├── docker-compose.yml
 │   └── kubernetes/
-│       ├── base/
+│       ├── base/             # Base Kubernetes manifests
 │       └── overlays/
-│           ├── dev/
-│           └── prod/
+│           ├── dev/          # Development environment
+│           └── prod/         # Production environment
 ├── scripts/
-│   ├── build-service.sh
-│   ├── build-all.sh
-│   ├── dev.sh
-│   └── generate-proto.sh
 └── .github/workflows/
 ```
 
@@ -93,51 +71,83 @@ A microservices-based dating application backend built with Go, following DDD an
 
 - Go 1.25+
 - Docker & Docker Compose
+- Kubernetes (Docker Desktop or minikube)
 - Make
 
-### Development
+### Option 1: Docker Compose (Simple)
 
-1. Start infrastructure (PostgreSQL, Redis, NATS):
 ```bash
+# Start PostgreSQL, Redis, NATS
 make dev
+
+# Run services locally
+cd backend/services/member && go run ./cmd/server
+cd backend/gateway && go run ./cmd/server
 ```
 
-2. Run the member service:
+### Option 2: Kubernetes (Recommended)
+
 ```bash
-cd backend/services/member
-go run ./cmd/server
+# Build Docker images
+make build
+
+# Deploy to local Kubernetes
+make k8s-dev
+
+# Access the API
+curl http://localhost/health
 ```
 
-3. Run the gateway:
+**Kubernetes Dev Environment:**
+- Gateway: http://localhost (LoadBalancer)
+- PostgreSQL: dev-postgres:5432
+- NATS: dev-nats:4222
+
+Check pod status:
 ```bash
-cd backend/gateway
-go run ./cmd/server
+kubectl get pods -n dating-app-dev
 ```
 
-### Building
+### iOS App
 
-Build a specific service:
+Requires Xcode 15+ and XcodeGen:
+
 ```bash
+cd mobile/ios
+make setup   # Install XcodeGen and generate project
+make open    # Open in Xcode
+```
+
+See [mobile/ios/README.md](mobile/ios/README.md) for details.
+
+## Building
+
+```bash
+# Build all Docker images
+make build
+
+# Build specific service
 make build-member
 make build-gateway
 ```
 
-Build all services:
-```bash
-make build
-```
+## Kubernetes Environments
 
-### Running with Docker Compose
+| Environment | Namespace | Replicas | Resources |
+|-------------|-----------|----------|-----------|
+| Dev | dating-app-dev | 1 | 200m CPU, 256Mi |
+| Prod | dating-app | 2+ | 500m CPU, 512Mi |
 
+Deploy:
 ```bash
-cd infrastructure
-docker-compose up
+make k8s-dev   # Development
+make k8s-prod  # Production
 ```
 
 ## API Documentation
 
-- REST API: See `api/openapi/gateway.yaml`
-- gRPC: See `api/proto/member/v1/member.proto`
+- REST API: `api/openapi/gateway.yaml`
+- gRPC: `api/proto/member/v1/member.proto`
 
 ## Domain Model (Member Service)
 

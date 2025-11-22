@@ -20,12 +20,19 @@ func main() {
 	grpcServer := grpc.NewServer()
 	// TODO: Register gRPC services
 
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok"}`))
+	})
+
 	httpServer := &http.Server{
 		Addr:         ":8080",
+		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	// TODO: Register HTTP handlers
 
 	go func() {
 		lis, err := net.Listen("tcp", ":9090")

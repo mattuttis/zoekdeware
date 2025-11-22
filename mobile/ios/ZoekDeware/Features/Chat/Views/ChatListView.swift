@@ -9,11 +9,16 @@ struct ChatListView: View {
                 if viewModel.isLoading && viewModel.conversations.isEmpty {
                     ProgressView()
                 } else if viewModel.conversations.isEmpty {
-                    ContentUnavailableView(
-                        "No Conversations",
-                        systemImage: "message.fill",
-                        description: Text("Match with someone to start chatting")
-                    )
+                    VStack(spacing: 16) {
+                        Image(systemName: "message.fill")
+                            .font(.system(size: 48))
+                            .foregroundStyle(.secondary)
+                        Text("No Conversations")
+                            .font(.title2.bold())
+                        Text("Match with someone to start chatting")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 } else {
                     List(viewModel.conversations) { conversation in
                         NavigationLink {

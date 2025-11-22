@@ -7,9 +7,9 @@ enum AuthEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .register: return "/auth/register"
-        case .login: return "/auth/login"
-        case .refresh: return "/auth/refresh"
+        case .register: return "auth/register"
+        case .login: return "auth/login"
+        case .refresh: return "auth/refresh"
         }
     }
 
@@ -33,7 +33,7 @@ enum ProfileEndpoint: Endpoint {
     case get
     case update(UpdateProfileRequest)
 
-    var path: String { "/profile" }
+    var path: String { "profile" }
 
     var method: HTTPMethod {
         switch self {
@@ -57,9 +57,9 @@ enum DiscoverEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .getProfiles(let limit): return "/discover?limit=\(limit)"
-        case .swipe: return "/swipe"
-        case .matches: return "/matches"
+        case .getProfiles(let limit): return "discover?limit=\(limit)"
+        case .swipe: return "swipe"
+        case .matches: return "matches"
         }
     }
 
@@ -87,9 +87,9 @@ enum ChatEndpoint: Endpoint {
 
     var path: String {
         switch self {
-        case .conversations: return "/conversations"
-        case .conversation(let id): return "/conversations/\(id)"
-        case .sendMessage(let id, _): return "/conversations/\(id)/messages"
+        case .conversations: return "conversations"
+        case .conversation(let id): return "conversations/\(id)"
+        case .sendMessage(let id, _): return "conversations/\(id)/messages"
         }
     }
 

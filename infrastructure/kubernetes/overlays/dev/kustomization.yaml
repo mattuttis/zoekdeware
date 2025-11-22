@@ -5,6 +5,7 @@ namespace: dating-app-dev
 
 resources:
   - ../../base
+  - secrets.yaml
 
 namePrefix: dev-
 
@@ -12,6 +13,10 @@ replicas:
   - name: gateway
     count: 1
   - name: member
+    count: 1
+  - name: postgres
+    count: 1
+  - name: nats
     count: 1
 
 patches:
@@ -24,3 +29,25 @@ patches:
         value: 256Mi
     target:
       kind: Deployment
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/2/value
+        value: dev-member:9090
+      - op: replace
+        path: /spec/template/spec/containers/0/env/3/value
+        value: dev-matching:9091
+      - op: replace
+        path: /spec/template/spec/containers/0/env/4/value
+        value: dev-messaging:9092
+      - op: replace
+        path: /spec/template/spec/containers/0/env/5/value
+        value: dev-notification:9093
+      - op: replace
+        path: /spec/template/spec/containers/0/env/6/value
+        value: dev-media:9094
+      - op: replace
+        path: /spec/template/spec/containers/0/env/7/value
+        value: dev-location:9095
+    target:
+      kind: Deployment
+      name: gateway

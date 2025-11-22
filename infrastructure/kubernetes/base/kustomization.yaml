@@ -5,6 +5,8 @@ namespace: dating-app
 
 resources:
   - namespace.yaml
+  - postgres-deployment.yaml
+  - nats-deployment.yaml
   - gateway-deployment.yaml
   - member-deployment.yaml
 
