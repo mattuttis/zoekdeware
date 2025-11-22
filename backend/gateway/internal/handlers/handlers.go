@@ -8,7 +8,7 @@ import (
 )
 
 func Health(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 func Register(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,7 @@ func RefreshToken(w http.ResponseWriter, r *http.Request) {
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(middleware.UserIDKey).(string)
 	// TODO: Forward to member service
-	json.NewEncoder(w).Encode(map[string]string{"user_id": userID})
+	_ = json.NewEncoder(w).Encode(map[string]string{"user_id": userID})
 }
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {

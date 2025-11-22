@@ -32,8 +32,8 @@ test:
 	cd backend && go test ./...
 
 lint:
-	cd backend/gateway && golangci-lint run
-	cd backend/services/member && golangci-lint run
+	cd backend/gateway && ~/go/bin/golangci-lint run
+	cd backend/services/member && ~/go/bin/golangci-lint run
 
 proto:
 	./scripts/generate-proto.sh

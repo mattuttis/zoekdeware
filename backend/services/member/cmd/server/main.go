@@ -24,7 +24,7 @@ func main() {
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
 	httpServer := &http.Server{
@@ -58,5 +58,5 @@ func main() {
 
 	log.Println("Shutting down servers...")
 	grpcServer.GracefulStop()
-	httpServer.Shutdown(ctx)
+	_ = httpServer.Shutdown(ctx)
 }
