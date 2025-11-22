@@ -1,0 +1,447 @@
+openapi: 3.0.3
+info:
+  title: Dating App API
+  description: API Gateway for the dating application
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /profile:
+    get:
+      tags: [Profile]
+      summary: Get current user profile
+      responses:
+        '200':
+          description: Profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+    put:
+      tags: [Profile]
+      summary: Update profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+
+  /discover:
+    get:
+      tags: [Matching]
+      summary: Get profiles to discover
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Profiles retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoverResponse'
+
+  /swipe:
+    post:
+      tags: [Matching]
+      summary: Record a swipe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwipeRequest'
+      responses:
+        '200':
+          description: Swipe recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SwipeResponse'
+
+  /matches:
+    get:
+      tags: [Matching]
+      summary: Get matches
+      responses:
+        '200':
+          description: Matches retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MatchesResponse'
+
+  /conversations:
+    get:
+      tags: [Messaging]
+      summary: Get conversations
+      responses:
+        '200':
+          description: Conversations retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsResponse'
+
+  /conversations/{id}:
+    get:
+      tags: [Messaging]
+      summary: Get conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationResponse'
+
+  /conversations/{id}/messages:
+    post:
+      tags: [Messaging]
+      summary: Send a message
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '201':
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+
+  /media:
+    post:
+      tags: [Media]
+      summary: Upload media
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Media uploaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResponse'
+
+  /location:
+    put:
+      tags: [Location]
+      summary: Update location
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LocationRequest'
+      responses:
+        '200':
+          description: Location updated
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        expires_at:
+          type: integer
+          format: int64
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        display_name:
+          type: string
+        bio:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [male, female, other]
+        interests:
+          type: array
+          items:
+            type: string
+        photos:
+          type: array
+          items:
+            type: string
+            format: uri
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+        bio:
+          type: string
+        birth_date:
+          type: string
+          format: date
+        gender:
+          type: string
+        interests:
+          type: array
+          items:
+            type: string
+
+    DiscoverResponse:
+      type: object
+      properties:
+        profiles:
+          type: array
+          items:
+            $ref: '#/components/schemas/DiscoverProfile'
+
+    DiscoverProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        age:
+          type: integer
+        bio:
+          type: string
+        photos:
+          type: array
+          items:
+            type: string
+        distance_km:
+          type: number
+
+    SwipeRequest:
+      type: object
+      required: [swiped_id, direction]
+      properties:
+        swiped_id:
+          type: string
+        direction:
+          type: string
+          enum: [like, pass, super_like]
+
+    SwipeResponse:
+      type: object
+      properties:
+        match:
+          $ref: '#/components/schemas/Match'
+
+    Match:
+      type: object
+      properties:
+        id:
+          type: string
+        member_id:
+          type: string
+        display_name:
+          type: string
+        photo_url:
+          type: string
+        matched_at:
+          type: string
+          format: date-time
+
+    MatchesResponse:
+      type: object
+      properties:
+        matches:
+          type: array
+          items:
+            $ref: '#/components/schemas/Match'
+
+    ConversationsResponse:
+      type: object
+      properties:
+        conversations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conversation'
+
+    Conversation:
+      type: object
+      properties:
+        id:
+          type: string
+        participant:
+          $ref: '#/components/schemas/ConversationParticipant'
+        last_message:
+          $ref: '#/components/schemas/Message'
+        unread_count:
+          type: integer
+
+    ConversationParticipant:
+      type: object
+      properties:
+        id:
+          type: string
+        display_name:
+          type: string
+        photo_url:
+          type: string
+
+    ConversationResponse:
+      type: object
+      properties:
+        conversation:
+          $ref: '#/components/schemas/Conversation'
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+
+    SendMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+
+    Message:
+      type: object
+      properties:
+        id:
+          type: string
+        sender_id:
+          type: string
+        content:
+          type: string
+        sent_at:
+          type: string
+          format: date-time
+        read_at:
+          type: string
+          format: date-time
+
+    MediaResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        url:
+          type: string
+          format: uri
+
+    LocationRequest:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number

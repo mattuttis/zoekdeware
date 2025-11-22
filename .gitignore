@@ -1,0 +1,72 @@
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+bin/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+*.env
+
+# iOS
+mobile/ios/*.xcodeproj
+mobile/ios/*.xcworkspace
+mobile/ios/DerivedData/
+mobile/ios/build/
+mobile/ios/Pods/
+mobile/ios/.build/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+mobile/ios/Podfile.lock
+
+# Carthage
+mobile/ios/Carthage/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+
+# Infrastructure
+infrastructure/terraform/.terraform/
+infrastructure/terraform/*.tfstate
+infrastructure/terraform/*.tfstate.*
+infrastructure/terraform/*.tfvars
+
+# Docker
+*.log
+
+# Coverage
+coverage.out
+coverage.html

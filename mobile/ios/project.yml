@@ -1,0 +1,91 @@
+name: ZoekDeware
+options:
+  bundleIdPrefix: com.zoekdeware
+  deploymentTarget:
+    iOS: "16.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.9"
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  ZoekDeware:
+    type: application
+    platform: iOS
+    sources:
+      - ZoekDeware
+    settings:
+      base:
+        INFOPLIST_FILE: ZoekDeware/Resources/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.zoekdeware.app
+        TARGETED_DEVICE_FAMILY: "1"
+        IPHONEOS_DEPLOYMENT_TARGET: "16.0"
+        SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+    info:
+      path: ZoekDeware/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: ZoekDeware
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        UILaunchScreen:
+          UIColorName: ""
+          UIImageName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: "ZoekDeware needs camera access to take profile photos"
+        NSPhotoLibraryUsageDescription: "ZoekDeware needs photo library access to select profile photos"
+        NSLocationWhenInUseUsageDescription: "ZoekDeware needs your location to find people near you"
+    entitlements:
+      path: ZoekDeware/Resources/ZoekDeware.entitlements
+      properties:
+        keychain-access-groups:
+          - $(AppIdentifierPrefix)com.zoekdeware.app
+
+  ZoekDewareTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - ZoekDewareTests
+    dependencies:
+      - target: ZoekDeware
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zoekdeware.app.tests
+
+  ZoekDewareUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - ZoekDewareUITests
+    dependencies:
+      - target: ZoekDeware
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zoekdeware.app.uitests
+
+schemes:
+  ZoekDeware:
+    build:
+      targets:
+        ZoekDeware: all
+        ZoekDewareTests: [test]
+        ZoekDewareUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ZoekDewareTests
+        - ZoekDewareUITests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
