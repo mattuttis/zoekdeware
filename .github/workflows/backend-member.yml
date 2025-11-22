@@ -39,13 +39,7 @@ jobs:
 
       - name: Run tests
         working-directory: backend/services/member
-        run: go test -v -race -coverprofile=coverage.out ./...
-
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: backend/services/member/coverage.out
-          flags: member
+        run: go test -v -race ./...
 
   lint:
     runs-on: ubuntu-latest

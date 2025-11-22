@@ -37,7 +37,7 @@ jobs:
 
       - name: Run tests
         working-directory: backend/gateway
-        run: go test -v -race -coverprofile=coverage.out ./...
+        run: go test -v -race ./...
 
   lint:
     runs-on: ubuntu-latest
