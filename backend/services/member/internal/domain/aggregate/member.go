@@ -70,6 +70,10 @@ func (m *Member) Version() int {
 	return m.version
 }
 
+func (m *Member) Profile() valueobject.Profile {
+	return m.profile
+}
+
 func (m *Member) UpdateProfile(profile valueobject.Profile) error {
 	m.profile = profile
 	m.updatedAt = time.Now()
