@@ -39,7 +39,7 @@ func (r *PostgresMemberRepository) Save(ctx context.Context, member *aggregate.M
 	if err != nil {
 		return fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 
 	// Get current version for optimistic locking
 	currentVersion := member.Version() - len(changes)
