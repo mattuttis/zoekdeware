@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/mattuttis/inetcontrol/zoekdeware/backend/services/member/internal/domain/aggregate"
 	"github.com/mattuttis/inetcontrol/zoekdeware/backend/services/member/internal/domain/commands"
 	"github.com/mattuttis/inetcontrol/zoekdeware/backend/services/member/internal/domain/repository"
@@ -11,7 +13,8 @@ import (
 )
 
 var (
-	ErrMemberAlreadyExists = errors.New("member with this email already exists")
+	ErrMemberAlreadyExists  = errors.New("member with this email already exists")
+	ErrInvalidCredentials   = errors.New("invalid email or password")
 )
 
 type MemberService struct {
@@ -47,8 +50,36 @@ func (s *MemberService) RegisterMember(ctx context.Context, cmd commands.Registe
 		return nil, err
 	}
 
-	if err := s.repo.Save(ctx, member); err != nil {
+	// Hash password
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(cmd.Password), bcrypt.DefaultCost)
+	if err != nil {
 		return nil, err
+	}
+
+	if err := s.repo.SaveWithPassword(ctx, member, string(passwordHash)); err != nil {
+		return nil, err
+	}
+
+	return member, nil
+}
+
+// AuthenticateMember verifies the email and password, returning the member if valid.
+func (s *MemberService) AuthenticateMember(ctx context.Context, email, password string) (*aggregate.Member, error) {
+	member, err := s.repo.GetByEmail(ctx, email)
+	if err != nil {
+		if err == aggregate.ErrMemberNotFound {
+			return nil, ErrInvalidCredentials
+		}
+		return nil, err
+	}
+
+	passwordHash, err := s.repo.GetPasswordHash(ctx, member.ID())
+	if err != nil {
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(password)); err != nil {
+		return nil, ErrInvalidCredentials
 	}
 
 	return member, nil

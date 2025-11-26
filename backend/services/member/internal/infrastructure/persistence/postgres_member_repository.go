@@ -30,6 +30,15 @@ func NewPostgresMemberRepository(db *sql.DB) repository.MemberRepository {
 // Save persists all uncommitted events from the member aggregate to the event store
 // and updates the read model within a single transaction.
 func (r *PostgresMemberRepository) Save(ctx context.Context, member *aggregate.Member) error {
+	return r.saveInternal(ctx, member, "")
+}
+
+// SaveWithPassword saves the member and also stores the password hash.
+func (r *PostgresMemberRepository) SaveWithPassword(ctx context.Context, member *aggregate.Member, passwordHash string) error {
+	return r.saveInternal(ctx, member, passwordHash)
+}
+
+func (r *PostgresMemberRepository) saveInternal(ctx context.Context, member *aggregate.Member, passwordHash string) error {
 	changes := member.Changes()
 	if len(changes) == 0 {
 		return nil
@@ -63,7 +72,7 @@ func (r *PostgresMemberRepository) Save(ctx context.Context, member *aggregate.M
 	}
 
 	// Update read model
-	if err := r.updateReadModel(ctx, tx, member); err != nil {
+	if err := r.updateReadModel(ctx, tx, member, passwordHash); err != nil {
 		return fmt.Errorf("update read model: %w", err)
 	}
 
@@ -149,8 +158,25 @@ func (r *PostgresMemberRepository) loadEvents(ctx context.Context, where string,
 	return eventStream, nil
 }
 
+// GetPasswordHash retrieves the password hash for a member.
+func (r *PostgresMemberRepository) GetPasswordHash(ctx context.Context, memberID string) (string, error) {
+	var passwordHash sql.NullString
+	err := r.db.QueryRowContext(ctx, `
+		SELECT password_hash FROM members WHERE id = $1
+	`, memberID).Scan(&passwordHash)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", aggregate.ErrMemberNotFound
+	}
+	if err != nil {
+		return "", fmt.Errorf("query password hash: %w", err)
+	}
+
+	return passwordHash.String, nil
+}
+
 // updateReadModel upserts the member read model from the current aggregate state.
-func (r *PostgresMemberRepository) updateReadModel(ctx context.Context, tx *sql.Tx, member *aggregate.Member) error {
+func (r *PostgresMemberRepository) updateReadModel(ctx context.Context, tx *sql.Tx, member *aggregate.Member, passwordHash string) error {
 	profile := member.Profile()
 
 	// Convert photo URLs to string slice for PostgreSQL array
@@ -159,6 +185,40 @@ func (r *PostgresMemberRepository) updateReadModel(ctx context.Context, tx *sql.
 		photos[i] = string(p)
 	}
 
+	if passwordHash != "" {
+		// Insert with password hash (registration)
+		_, err := tx.ExecContext(ctx, `
+			INSERT INTO members (id, email, password_hash, display_name, bio, birth_date, gender, interests, photos, status, version, created_at, updated_at)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())
+			ON CONFLICT (id) DO UPDATE SET
+				email = EXCLUDED.email,
+				password_hash = EXCLUDED.password_hash,
+				display_name = EXCLUDED.display_name,
+				bio = EXCLUDED.bio,
+				birth_date = EXCLUDED.birth_date,
+				gender = EXCLUDED.gender,
+				interests = EXCLUDED.interests,
+				photos = EXCLUDED.photos,
+				status = EXCLUDED.status,
+				version = EXCLUDED.version,
+				updated_at = NOW()
+		`,
+			member.ID(),
+			member.Email().String(),
+			passwordHash,
+			nullString(profile.DisplayName),
+			nullString(profile.Bio),
+			nullTime(profile.BirthDate),
+			nullString(string(profile.Gender)),
+			pq.Array(profile.Interests),
+			pq.Array(photos),
+			string(member.Status()),
+			member.Version(),
+		)
+		return err
+	}
+
+	// Update without changing password hash
 	_, err := tx.ExecContext(ctx, `
 		INSERT INTO members (id, email, display_name, bio, birth_date, gender, interests, photos, status, version, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW())

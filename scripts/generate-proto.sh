@@ -28,8 +28,8 @@ for service in $SERVICES; do
     if [ -d "$PROTO_DIR" ]; then
         echo "Generating Go code for $service..."
         protoc --proto_path="$API_DIR" \
-            --go_out="$ROOT_DIR" --go_opt=paths=source_relative \
-            --go-grpc_out="$ROOT_DIR" --go-grpc_opt=paths=source_relative \
+            --go_out="$API_DIR" --go_opt=paths=source_relative \
+            --go-grpc_out="$API_DIR" --go-grpc_opt=paths=source_relative \
             "$PROTO_DIR"/*.proto
     fi
 done

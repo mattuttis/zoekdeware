@@ -9,6 +9,7 @@ type Command interface {
 type RegisterMember struct {
 	MemberID string
 	Email    string
+	Password string
 }
 
 func (c RegisterMember) CommandType() string { return "member.register" }

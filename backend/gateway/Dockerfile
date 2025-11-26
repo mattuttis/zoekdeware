@@ -3,6 +3,7 @@ FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
 # Copy go.work and all modules it references
+COPY api/proto/ api/proto/
 COPY backend/go.work backend/go.work
 COPY backend/shared/ backend/shared/
 COPY backend/gateway/ backend/gateway/

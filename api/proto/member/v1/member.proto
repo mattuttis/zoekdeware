@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package member.v1;
 
-option go_package = "github.com/inetcontrol/zoekdeware/api/proto/member/v1;memberv1";
+option go_package = "github.com/mattuttis/inetcontrol/zoekdeware/api/proto/member/v1;memberv1";
 
 import "google/protobuf/timestamp.proto";
 
 service MemberService {
   rpc RegisterMember(RegisterMemberRequest) returns (RegisterMemberResponse);
+  rpc AuthenticateMember(AuthenticateMemberRequest) returns (AuthenticateMemberResponse);
   rpc GetMember(GetMemberRequest) returns (GetMemberResponse);
   rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
   rpc ActivateMember(ActivateMemberRequest) returns (ActivateMemberResponse);
@@ -51,6 +52,15 @@ message RegisterMemberRequest {
 }
 
 message RegisterMemberResponse {
+  Member member = 1;
+}
+
+message AuthenticateMemberRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message AuthenticateMemberResponse {
   Member member = 1;
 }
 
